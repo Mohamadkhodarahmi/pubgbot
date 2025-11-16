@@ -181,10 +181,18 @@ async def select_player_count(update: Update, context: ContextTypes.DEFAULT_TYPE
                 callback_data='enter_manually'
             )])
             
-            await query.edit_message_text(
-                get_text('select_saved_player', language, number=1),
-                reply_markup=InlineKeyboardMarkup(keyboard)
-            )
+            try:
+                await query.edit_message_text(
+                    get_text('select_saved_player', language, number=1),
+                    reply_markup=InlineKeyboardMarkup(keyboard)
+                )
+            except Exception:
+                # اگر پیام تغییر نکرده، از reply_text استفاده کنیم
+                await query.answer()
+                await query.message.reply_text(
+                    get_text('select_saved_player', language, number=1),
+                    reply_markup=InlineKeyboardMarkup(keyboard)
+                )
             return SELECTING_SAVED_PLAYER
         else:
             await query.edit_message_text(
@@ -205,9 +213,15 @@ async def select_saved_player(update: Update, context: ContextTypes.DEFAULT_TYPE
         language = get_user_language(query.from_user.id, db)
         
         if query.data == 'enter_manually':
-            await query.edit_message_text(
-                get_text('enter_player_name', language, number=context.user_data['current_player'])
-            )
+            try:
+                await query.edit_message_text(
+                    get_text('enter_player_name', language, number=context.user_data['current_player'])
+                )
+            except Exception:
+                await query.answer()
+                await query.message.reply_text(
+                    get_text('enter_player_name', language, number=context.user_data['current_player'])
+                )
             return ENTERING_PLAYER_NAMES
         
         # Get saved player
@@ -220,9 +234,15 @@ async def select_saved_player(update: Update, context: ContextTypes.DEFAULT_TYPE
             
             if context.user_data['current_player'] > context.user_data['player_count']:
                 # All players entered, ask for team name
-                await query.edit_message_text(
-                    get_text('enter_team_name', language)
-                )
+                try:
+                    await query.edit_message_text(
+                        get_text('enter_team_name', language)
+                    )
+                except Exception:
+                    await query.answer()
+                    await query.message.reply_text(
+                        get_text('enter_team_name', language)
+                    )
                 return ENTERING_TEAM_NAME
             else:
                 # Ask for next player
@@ -240,10 +260,18 @@ async def select_saved_player(update: Update, context: ContextTypes.DEFAULT_TYPE
                     callback_data='enter_manually'
                 )])
                 
-                await query.edit_message_text(
-                    get_text('select_saved_player', language, number=context.user_data['current_player']),
-                    reply_markup=InlineKeyboardMarkup(keyboard)
-                )
+                try:
+                    await query.edit_message_text(
+                        get_text('select_saved_player', language, number=context.user_data['current_player']),
+                        reply_markup=InlineKeyboardMarkup(keyboard)
+                    )
+                except Exception as e:
+                    # اگر پیام تغییر نکرده، فقط answer کنیم
+                    await query.answer()
+                    await query.message.reply_text(
+                        get_text('select_saved_player', language, number=context.user_data['current_player']),
+                        reply_markup=InlineKeyboardMarkup(keyboard)
+                    )
                 return SELECTING_SAVED_PLAYER
     finally:
         db.close()
