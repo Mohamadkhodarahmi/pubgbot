@@ -1,0 +1,31 @@
+services:
+  - type: worker
+    name: telegram-bot
+    env: python
+    buildCommand: pip install -r requirements.txt && python setup_db.py
+    startCommand: python bot.py
+    envVars:
+      - key: BOT_TOKEN
+        sync: false
+      - key: ADMIN_IDS
+        sync: false
+      - key: USE_BYPASS
+        value: true
+      - key: TELEGRAM_BYPASS_URL
+        value: https://public-telegram-bypass.solyfarzane9040.workers.dev
+      - key: DATABASE_URL
+        fromDatabase:
+          name: pubg-bot-db
+          property: connectionString
+
+  - type: web
+    name: admin-panel
+    env: python
+    buildCommand: pip install -r requirements.txt
+    startCommand: python admin_panel.py
+    envVars:
+      - key: PANEL_PORT
+        value: 5000
+      - key: PANEL_SECRET_KEY
+        generateValue: true
+
