@@ -9,7 +9,7 @@ from database import init_db
 from bot_handlers import (
     start_command, help_command, register_team_start, select_player_count,
     select_saved_player, enter_player_name, enter_team_name, cancel_registration,
-    my_teams, SELECTING_PLAYER_COUNT, ENTERING_TEAM_NAME, ENTERING_PLAYER_NAMES, SELECTING_SAVED_PLAYER
+    my_teams, settings_handler, SELECTING_PLAYER_COUNT, ENTERING_TEAM_NAME, ENTERING_PLAYER_NAMES, SELECTING_SAVED_PLAYER
 )
 from admin_handlers import (
     admin_panel, admin_toggle_registration, admin_set_price,
@@ -64,13 +64,17 @@ def main():
     application.add_handler(CommandHandler("start", start_command))
     application.add_handler(CommandHandler("help", help_command))
     application.add_handler(CommandHandler("verify", verify_payment_command))
-    application.add_handler(registration_handler)
     
-    # My teams handler
+    # Menu handlers (باید قبل از conversation handler باشند)
     application.add_handler(MessageHandler(filters.Regex('^(👥 تیم‌های من|👥 My Teams)$'), my_teams))
+    application.add_handler(MessageHandler(filters.Regex('^(⚙️ تنظیمات|⚙️ Settings)$'), settings_handler))
+    application.add_handler(MessageHandler(filters.Regex('^(❓ راهنما|❓ Help)$'), help_command))
     
     # Admin handlers
     application.add_handler(MessageHandler(filters.Regex('^(🔧 پنل مدیریت|🔧 Admin Panel)$'), admin_panel))
+    
+    # Registration conversation handler (باید بعد از menu handlers باشد)
+    application.add_handler(registration_handler)
     application.add_handler(CallbackQueryHandler(admin_toggle_registration, pattern='^admin_toggle_registration$'))
     application.add_handler(CallbackQueryHandler(admin_set_price, pattern='^admin_set_price'))
     application.add_handler(CallbackQueryHandler(admin_view_registrations, pattern='^admin_view_registrations$'))

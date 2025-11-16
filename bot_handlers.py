@@ -253,6 +253,15 @@ async def enter_player_name(update: Update, context: ContextTypes.DEFAULT_TYPE):
     """Handle player name input"""
     player_name = update.message.text.strip()
     
+    # بررسی اینکه آیا دکمه منو است یا نه
+    menu_buttons = ['⚙️ تنظیمات', '❓ راهنما', '📝 ثبت‌نام تیم', '👥 تیم‌های من', 
+                    '⚙️ Settings', '❓ Help', '📝 Register Team', '👥 My Teams',
+                    '🔧 پنل مدیریت', '🔧 Admin Panel']
+    if player_name in menu_buttons:
+        # لغو conversation و برگشت به منو
+        await cancel_registration(update, context)
+        return ConversationHandler.END
+    
     if not player_name:
         db = SessionLocal()
         try:
@@ -297,6 +306,15 @@ async def enter_player_name(update: Update, context: ContextTypes.DEFAULT_TYPE):
 async def enter_team_name(update: Update, context: ContextTypes.DEFAULT_TYPE):
     """Handle team name input and create team"""
     team_name = update.message.text.strip()
+    
+    # بررسی اینکه آیا دکمه منو است یا نه
+    menu_buttons = ['⚙️ تنظیمات', '❓ راهنما', '📝 ثبت‌نام تیم', '👥 تیم‌های من', 
+                    '⚙️ Settings', '❓ Help', '📝 Register Team', '👥 My Teams',
+                    '🔧 پنل مدیریت', '🔧 Admin Panel']
+    if team_name in menu_buttons:
+        # لغو conversation و برگشت به منو
+        await cancel_registration(update, context)
+        return ConversationHandler.END
     
     if not team_name:
         db = SessionLocal()
@@ -422,6 +440,21 @@ async def my_teams(update: Update, context: ContextTypes.DEFAULT_TYPE):
                 text += f"بخش: {team.section_number}" if language == 'fa' else f"Section: {team.section_number}"
             
             await update.message.reply_text(text)
+    finally:
+        db.close()
+
+
+async def settings_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    """Handle settings button"""
+    db = SessionLocal()
+    try:
+        user_id = update.effective_user.id
+        language = get_user_language(user_id, db)
+        
+        text = "⚙️ تنظیمات\n\n" if language == 'fa' else "⚙️ Settings\n\n"
+        text += "در حال توسعه..." if language == 'fa' else "Under development..."
+        
+        await update.message.reply_text(text, reply_markup=get_main_keyboard(language))
     finally:
         db.close()
 
